@@ -25,6 +25,10 @@ An agent, session or person who has seen decompiled code must never take on the 
 - If a spec is missing, ambiguous or wrong, don't work around it by looking at the original. Add the question to `docs/spec/open-questions.md` and stop that line of work.
 - Never commit vendor binaries, extracted resources, or real device `.cfg` files (they contain credentials).
 
+**Never extract, record or use vendor cryptographic secrets.** This covers firmware decryption keys, passwords, signing keys, and any other secret embedded in Teltonika software. It applies to every role. Don't write them into notes, specs, code or tests, and don't build features that decrypt or re-sign vendor-protected packages. Encrypted firmware packages are out of scope unless Teltonika provides a supported path.
+
+**Revising a released spec:** the analysis role starts from the released copy in `docs/spec/`, which includes the reviewer's redactions, not from its original draft. Otherwise the redactions get reintroduced. Reading `docs/spec/` is fine for any role; information only flows the other way through review.
+
 **Spec drafts** contain behaviour and interface facts only: transport settings, byte layouts, field meanings, command IDs, checksum parameters, flows, error cases and test vectors. They contain no code or pseudocode derived from the original, no vendor-internal class, method or variable names, and no copied comments or text beyond protocol constants and user-visible labels.
 
 ## Choosing a model and effort per job
@@ -41,6 +45,18 @@ When the harness supports subagents or tasks, delegate each job and choose the m
 | Architecture and design decisions | Frontier | high |
 
 Use the equivalent tier in whichever harness you're running. In Claude Code, for example, the tiers are Haiku, Sonnet and Opus, set through the Agent tool's `model` and `effort`. Other harnesses map the same tiers onto their own models and reasoning-effort settings.
+
+### Session length and handoffs
+
+Background agents run for **at most 20 minutes**. Then the agent stops and a fresh agent continues from its handoff file.
+
+- Record the start time (`date`) when you begin, and check it between steps. At about 17 minutes, stop starting new work and wrap up.
+- Wrapping up means: leave the code compiling and tests passing (stub cleanly if needed), commit on your branch, write the handoff file, and report back.
+- Handoff files, overwritten by each agent in a role:
+  - Implementation: `.agents/HANDOFF-implementation.md` in this repo (gitignored)
+  - Analysis: `../teltonika-re/notes/HANDOFF.md` (dirty side, never read by other roles)
+- A handoff covers: current state, what's done (files and commits), what's in progress, next steps in priority order, open questions, gotchas and dead ends.
+- A new agent reads its role's handoff first and continues from it without redoing work. Roles still never mix: an implementation agent never reads the analysis handoff.
 
 Rules:
 - Pick the cheapest tier that can do the job reliably. Move up only when the job needs it or a cheaper attempt failed.

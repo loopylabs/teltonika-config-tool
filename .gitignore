@@ -4,3 +4,9 @@ src-tauri/target/
 src-tauri/gen/
 .DS_Store
 *.cfg
+.agents/
+
+# Vendor device pictures are cached in the app-data dir only; never commit them.
+device-images/
+*.g.resources
+devices/*.png
